@@ -14,18 +14,16 @@ class WeatherPage extends StatefulWidget {
 
 class _LocationPageState extends State<WeatherPage> {
   Position? _currentPosition;
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    scaffoldMessengerKey.currentState?.showSnackBar(const SnackBar(
-        content: Text(
-            'Location services are disabled. Please enable the services')));
+
     if (!serviceEnabled) {
-      scaffoldMessengerKey.currentState?.showSnackBar(const SnackBar(
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
               'Location services are disabled. Please enable the services')));
       return false;
@@ -34,13 +32,15 @@ class _LocationPageState extends State<WeatherPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        scaffoldMessengerKey.currentState?.showSnackBar(
+        if (!mounted) return false;
+        ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Location permissions are denied')));
         return false;
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      scaffoldMessengerKey.currentState?.showSnackBar(const SnackBar(
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
               'Location permissions are permanently denied, we cannot request permissions.')));
       return false;
@@ -51,9 +51,15 @@ class _LocationPageState extends State<WeatherPage> {
   Future<void> _getCurrentPosition() async {
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) return;
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+    await Geolocator.getCurrentPosition(forceAndroidLocationManager: true, desiredAccuracy: LocationAccuracy.high)
         .then((Position position) {
-      setState(() => _currentPosition = position);
+      setState(() {
+        _currentPosition = position;
+        weatherBloc.add(WeatherInitialFetchEvent(
+            lat: _currentPosition?.latitude ?? 0,
+            lon: _currentPosition?.longitude ?? 0));
+      }
+      );
     }).catchError((e) {
       debugPrint(e);
     });
@@ -63,21 +69,17 @@ class _LocationPageState extends State<WeatherPage> {
 
   @override
   void initState() {
-    super.initState();
     _getCurrentPosition();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    weatherBloc.add(WeatherInitialFetchEvent(
-        lat: _currentPosition?.latitude ?? 0,
-        lon: _currentPosition?.longitude ?? 0));
     return Scaffold(
-      key: scaffoldMessengerKey,
       body: BlocConsumer<WeatherBloc, WeatherState>(
         bloc: weatherBloc,
         listenWhen: (previous, current) => current is WeatherActionState,
-        buildWhen: (previous, current) => current is! WeatherActionState,
+        buildWhen: (previous, current) => current is !WeatherActionState,
         listener: (context, state) {},
         builder: (context, state) {
           switch (state.runtimeType) {
@@ -210,7 +212,7 @@ class _LocationPageState extends State<WeatherPage> {
             case WeatherFetchingErrorState:
               return const SizedBox();
             default:
-              return Container();
+              return const SizedBox();
           }
         },
       ),

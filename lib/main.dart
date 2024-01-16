@@ -17,7 +17,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Location Demo',
       debugShowCheckedModeBanner: false,
-      // scaffoldMessengerKey: rootScaffoldMessengerKey,
       theme: ThemeData(
           fontFamily: 'Montserrat',
           textTheme: const TextTheme(

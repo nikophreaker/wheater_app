@@ -17,7 +17,8 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
   FutureOr<void> weatherInitialFetchEvent(
       WeatherInitialFetchEvent event, Emitter<WeatherState> emit) async {
     emit(WeatherFetchingLoadingState());
-    WeatherDataUiModel? weather = await WeatherRepo.fetchWeather(event.lat,event.lon);
+    WeatherDataUiModel? weather =
+        await WeatherRepo.fetchWeather(event.lat, event.lon);
     emit(WeatherSuccessFetch(weather: weather));
   }
 }
