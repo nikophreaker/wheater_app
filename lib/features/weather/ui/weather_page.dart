@@ -15,7 +15,6 @@ class WeatherPage extends StatefulWidget {
 }
 
 class _LocationPageState extends State<WeatherPage> {
-  String? _currentAddress;
   Position? _currentPosition;
 
   Future<bool> _handleLocationPermission() async {
