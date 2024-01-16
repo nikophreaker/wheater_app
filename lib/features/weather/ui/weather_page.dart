@@ -5,9 +5,7 @@ import 'package:weather_app/features/weather/bloc/weather_bloc.dart';
 import 'package:intl/intl.dart';
 
 class WeatherPage extends StatefulWidget {
-  final ScaffoldMessengerState? scaffoldMessengerState;
-
-  const WeatherPage({Key? key, required this.scaffoldMessengerState})
+  const WeatherPage({Key? key})
       : super(key: key);
 
   @override
@@ -16,14 +14,18 @@ class WeatherPage extends StatefulWidget {
 
 class _LocationPageState extends State<WeatherPage> {
   Position? _currentPosition;
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    scaffoldMessengerKey.currentState?.showSnackBar(const SnackBar(
+        content: Text(
+            'Location services are disabled. Please enable the services')));
     if (!serviceEnabled) {
-      widget.scaffoldMessengerState?.showSnackBar(const SnackBar(
+      scaffoldMessengerKey.currentState?.showSnackBar(const SnackBar(
           content: Text(
               'Location services are disabled. Please enable the services')));
       return false;
@@ -32,13 +34,13 @@ class _LocationPageState extends State<WeatherPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        widget.scaffoldMessengerState?.showSnackBar(
+        scaffoldMessengerKey.currentState?.showSnackBar(
             const SnackBar(content: Text('Location permissions are denied')));
         return false;
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      widget.scaffoldMessengerState?.showSnackBar(const SnackBar(
+      scaffoldMessengerKey.currentState?.showSnackBar(const SnackBar(
           content: Text(
               'Location permissions are permanently denied, we cannot request permissions.')));
       return false;
@@ -61,8 +63,8 @@ class _LocationPageState extends State<WeatherPage> {
 
   @override
   void initState() {
-    _getCurrentPosition();
     super.initState();
+    _getCurrentPosition();
   }
 
   @override
@@ -71,6 +73,7 @@ class _LocationPageState extends State<WeatherPage> {
         lat: _currentPosition?.latitude ?? 0,
         lon: _currentPosition?.longitude ?? 0));
     return Scaffold(
+      key: scaffoldMessengerKey,
       body: BlocConsumer<WeatherBloc, WeatherState>(
         bloc: weatherBloc,
         listenWhen: (previous, current) => current is WeatherActionState,

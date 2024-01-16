@@ -6,20 +6,18 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Color(0xff4A4A4A),
   ));
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
-
-  final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Location Demo',
       debugShowCheckedModeBanner: false,
-      scaffoldMessengerKey: rootScaffoldMessengerKey,
+      // scaffoldMessengerKey: rootScaffoldMessengerKey,
       theme: ThemeData(
           fontFamily: 'Montserrat',
           textTheme: const TextTheme(
@@ -42,8 +40,7 @@ class MyApp extends StatelessWidget {
               onBackground: Colors.orange,
               surface: Color(0xff4A4A4A),
               onSurface: Colors.orange)),
-      home: WeatherPage(
-          scaffoldMessengerState: rootScaffoldMessengerKey.currentState),
+      home: const WeatherPage(),
     );
   }
 }
